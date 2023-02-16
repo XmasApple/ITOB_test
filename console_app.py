@@ -1,38 +1,6 @@
-import threading as th
-import time
 import keyboard
 
 from teapot import Teapot
-
-
-# Создать консольную программу, в которой при запуске можно "налить воды в чайник" и запустить его.
-
-
-# def input_thread(teapot: Teapot):
-#     print('press "q" to stop boiling')
-#     while teapot.is_boiling:
-#         if keyboard.is_pressed('q'):
-#             teapot.stop_boiling()
-#             break
-#         time.sleep(0.1)
-
-
-# singleton class for keep boiling
-class Singleton:
-    __instance = None
-
-    def __init__(self):
-        self.keep_boiling = False
-        if not Singleton.__instance:
-            print(" __init__ method called..")
-        else:
-            print("Instance already created:", self.getInstance())
-
-    @classmethod
-    def getInstance(cls):
-        if not cls.__instance:
-            cls.__instance = Singleton()
-        return cls.__instance
 
 
 def read_float(prompt: str,
@@ -67,7 +35,7 @@ def main():
     teapot = Teapot()
     water_level, water_temp = read_fill_params()
     teapot.set_water_level(water_level, water_temp)
-    # start boiling
+
     print(teapot)
 
     input('Press "Enter" to start boiling')
@@ -80,12 +48,6 @@ def main():
             teapot.stop_boiling()
             print('Boiling stopped')
             break
-        boiling, _ = teapot.boil()
-        if not boiling:
-            print('Boiling stopped')
-            break
-        print(teapot)
-        time.sleep(1)
 
 
 if __name__ == '__main__':

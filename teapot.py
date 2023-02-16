@@ -5,6 +5,8 @@
 # - Выводить сообщения при смене состояния (вкл, выкл, вскипел, остановлен);
 # - Если чайник включен, выводить температуру чайника каждую секунду;
 # - В любой момент пользователь может нажать кнопку, чтобы отключить чайник, в этом случае, программа завершится;
+import threading
+import time
 
 DEFAULT_TEMP: float = 20
 DEFAULT_MAX_TEMP: float = 100
@@ -38,23 +40,29 @@ class Teapot:
             return False, 'No water'
 
         self.is_boiling = True
+        threading.Thread(target=self._boil).start()
         return True, 'Teapot is on'
 
     def stop_boiling(self) -> (bool, str):
         self.is_boiling = False
         return True, 'Teapot is off'
 
-    # boil function should be called every second
-    def boil(self) -> (bool, str):
-        if not self.is_boiling:
-            return False, 'Teapot is off'
-
-        self.temp += (DEFAULT_MAX_TEMP - self.start_temp) / self.time_to_boil
-        if self.temp >= DEFAULT_MAX_TEMP:
-            self.is_boiling = False
-            return False, 'Teapot is boiled'
-
-        return True, f'Teapot temp is {self.temp}'
+    def _boil(self):
+        # calculate temp increase per second
+        temp_increase = (DEFAULT_MAX_TEMP - self.start_temp) / self.time_to_boil
+        while self.is_boiling:
+            # increase temp
+            self.temp += temp_increase
+            # if temp is more than max temp, set it to max temp
+            if self.temp > DEFAULT_MAX_TEMP:
+                self.temp = DEFAULT_MAX_TEMP
+            # if temp is more than 100, stop boiling
+            if self.temp >= DEFAULT_MAX_TEMP:
+                self.is_boiling = False
+                print(f'Teapot temp is {self.temp}, teapot is boiling')
+                return
+            print(f'Teapot temp is {self.temp}')
+            time.sleep(1)
 
     def __str__(self):
         return f'Teapot status: temp {self.temp}, ' \
