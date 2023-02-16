@@ -1,12 +1,16 @@
 import logging
 
 from flask import Flask, request, Response
+from flasgger import Swagger
 from teapot import Teapot
 
 app = Flask(__name__)
+swagger = Swagger(app)
+
 app.logger.disabled = True
 log = logging.getLogger('werkzeug')
 log.disabled = True
+
 teapot: Teapot | None = None
 
 
@@ -14,8 +18,13 @@ teapot: Teapot | None = None
 def create_teapot():
     """
     Creates teapot with default params
+    ---
+    responses:
+        201:
+            description: Teapot created
+        400:
+            description: Teapot already exists, reset it first with /reset
 
-    :return: 201 if teapot created, 400 if teapot already exists
     """
     global teapot
     if teapot is not None:
@@ -45,8 +54,24 @@ def is_float(s: str):
 def fill_teapot():
     """
     Fills teapot with water
+    ---
+    parameters:
+        - name: water_level
+          in: query
+          type: number
+          required: true
+          description: Water level in teapot
+        - name: water_temp
+          in: query
+          type: number
+          required: false
+          description: Water temperature in teapot
+    responses:
+        200:
+            description: Water added
+        400:
+            description: Teapot does not exist, create it first with /create
 
-    :return: 200 if water level set, 400 otherwise
     """
     global teapot
     if teapot is None:
@@ -74,8 +99,12 @@ def fill_teapot():
 def start_boiling():
     """
     Starts boiling water in teapot
-
-    :return: 200 if boiling started, 400 otherwise
+    ---
+    responses:
+        200:
+            description: Boiling started
+        400:
+            description: Teapot does not exist, create it first with /create
     """
     global teapot
     if teapot is None:
@@ -94,8 +123,12 @@ def start_boiling():
 def stop_boiling():
     """
     Stops boiling water in teapot
-
-    :return: 200 if boiling stopped, 400 otherwise
+    ---
+    responses:
+        200:
+            description: Boiling stopped
+        400:
+            description: Teapot does not exist, create it first with /create
     """
     global teapot
     if teapot is None:
@@ -110,9 +143,13 @@ def stop_boiling():
 def status():
     """
     Returns teapot status
-
-    :return: 200 if teapot exists, 400 otherwise
-    """
+    ---
+    responses:
+        200:
+            description: Teapot status
+        400:
+            description: Teapot does not exist, create it first with /create
+    # """
     global teapot
     if teapot is None:
         return Response(
@@ -121,12 +158,14 @@ def status():
     return Response(str(teapot))
 
 
-@app.route('/reset')
+@app.route('/api/reset')
 def reset():
     """
     Resets teapot
-
-    :return: 200
+    ---
+    responses:
+        200:
+            description: Teapot reset
     """
     global teapot
     teapot = None
