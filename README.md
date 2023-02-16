@@ -1,3 +1,37 @@
+# Установка
+## Установка зависимостей
+```bash
+pip -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+## Конфиг
+файлом конфигурации является файл .env, который должен выглядеть следующим образом:
+```bash
+STARTING_TEMP=20.0
+MAX_TEMP=100.0
+TIME_TO_BOIL=10.0
+MAX_WATER_LEVEL=1.0
+
+LOGS_DB_PATH=logs.db
+```
+
+## Запуск консольного приложения
+```bash
+python console_app.py
+```
+
+## Запуск Flask приложения
+```bash
+python flask_app.py
+```
+
+## Документация
+Документация доступна по адресу http://localhost:5000/apidocs/
+
+
+# Задание
 Написать класс, который описывает электрический чайник с кнопкой включения и функцией автоматического выключения. 
 
 Поведение должно соответствовать реальному электрочайнику. Например, Электрочайник Vitek VT-1155 [ссылка от 13 февраля](https://www.dns-shop.ru/product/995e88378f042ff4/elektrocajnik-vitek-vt-1155-cernyj/)
