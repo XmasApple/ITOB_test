@@ -1,21 +1,24 @@
-# Написать класс, который описывает электрический чайник с кнопкой включения и функцией автоматического выключения.
-#
-# - Количество воды задаётся числом с плавующей точкой от 0 до 1.0;
-# - Время закипания - 10 секунд;
-# - Выводить сообщения при смене состояния (вкл, выкл, вскипел, остановлен);
-# - Если чайник включен, выводить температуру чайника каждую секунду;
-# - В любой момент пользователь может нажать кнопку, чтобы отключить чайник, в этом случае, программа завершится;
 import threading
 import time
 
-DEFAULT_TEMP: float = 20
-DEFAULT_MAX_TEMP: float = 100
-DEFAULT_TIME_TO_BOIL: float = 10
-DEFAULT_MAX_WATER_LEVEL: float = 1.0
+import logging
+from logger import SQLiteHandler
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+STARTING_TEMP: float = float(os.getenv('STARTING_TEMP'))
+MAX_TEMP: float = float(os.getenv('MAX_TEMP'))
+TIME_TO_BOIL: float = float(os.getenv('TIME_TO_BOIL'))
+MAX_WATER_LEVEL: float = float(os.getenv('MAX_WATER_LEVEL'))
+
+LOGS_DB_PATH: str = os.getenv('LOGS_DB_PATH')
 
 
 class Teapot:
-    def __init__(self, time_to_boil: float = DEFAULT_TIME_TO_BOIL, max_water_level: float = DEFAULT_MAX_WATER_LEVEL):
+    def __init__(self, time_to_boil: float = TIME_TO_BOIL, max_water_level: float = MAX_WATER_LEVEL):
         self.time_to_boil: float = time_to_boil
         self.max_water_level: float = max_water_level
         self.water_level: float = 0
@@ -23,45 +26,70 @@ class Teapot:
         self.temp: float = 0
         self.start_temp: float = 0
 
+        logger = logging.getLogger()
+        logger.setLevel(logging.INFO)
+
+        logs_handler = SQLiteHandler(LOGS_DB_PATH)
+        logs_handler.setLevel(logging.INFO)
+
+        logging.getLogger().addHandler(logs_handler)
+        logging.info('Teapot created')
+
     def set_water_level(self, water_level: float, water_temp: float) -> (bool, str):
-        # can't add water if teapot is on
         if self.is_boiling:
-            return False, 'Teapot is on'
+            msg = 'Teapot is on'
+            logging.error(msg)
+            return False, msg
+
         if water_level > self.max_water_level:
-            return False, 'Too much water'
+            msg = f'Water level is more than {self.max_water_level}'
+            logging.error(msg)
+            return False, msg
+
+        if water_level <= 0:
+            msg = 'Water level should be more than 0'
+            logging.error(msg)
+            return False, msg
 
         self.temp = water_temp
         self.start_temp = water_temp
         self.water_level = water_level
-        return True, f'Water added, teapot temp is {self.temp}, water level is {self.water_level}'
+
+        msg = f'Water added, teapot temp is {self.temp}, water level is {self.water_level}'
+        logging.info(msg)
+        return True, msg
 
     def start_boiling(self) -> (bool, str):
-        if self.water_level == 0:
-            return False, 'No water'
+        if self.water_level <= 0:
+            msg = 'No water'
+            logging.error(msg)
+            return False, msg
 
         self.is_boiling = True
         threading.Thread(target=self._boil).start()
-        return True, 'Teapot is on'
+        msg = 'Boiling started'
+        logging.info(msg)
+        return True, msg
 
     def stop_boiling(self) -> (bool, str):
         self.is_boiling = False
-        return True, 'Teapot is off'
+        msg = 'Boiling stopped'
+        logging.info(msg)
+        return True, msg
 
     def _boil(self):
-        # calculate temp increase per second
-        temp_increase = (DEFAULT_MAX_TEMP - self.start_temp) / self.time_to_boil
+        temp_increase = (MAX_TEMP - self.start_temp) / self.time_to_boil
         while self.is_boiling:
-            # increase temp
             self.temp += temp_increase
-            # if temp is more than max temp, set it to max temp
-            if self.temp > DEFAULT_MAX_TEMP:
-                self.temp = DEFAULT_MAX_TEMP
-            # if temp is more than 100, stop boiling
-            if self.temp >= DEFAULT_MAX_TEMP:
+            if self.temp >= MAX_TEMP:
+                self.temp = MAX_TEMP
                 self.is_boiling = False
-                print(f'Teapot temp is {self.temp}, teapot is boiling')
+                msg = f'Teapot temp is {self.temp}, boiling finished'
+                logging.info(msg)
+                print(msg)
                 return
-            print(f'Teapot temp is {self.temp}')
+            msg = f'Teapot temp is {self.temp}, teapot is boiling'
+            logging.info(msg)
             time.sleep(1)
 
     def __str__(self):
