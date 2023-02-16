@@ -8,6 +8,15 @@ def read_float(prompt: str,
                max_val: float | None = None,
                default: float | None = None,
                ) -> float:
+    """
+    Read float value from console
+
+    :param prompt: prompt to show
+    :param min_val: min value
+    :param max_val: max value
+    :param default: default value
+    :return: float value
+    """
     while True:
         try:
             value = float(input(prompt))
@@ -25,6 +34,11 @@ def read_float(prompt: str,
 
 
 def read_fill_params() -> (float, float):
+    """
+    Read water level and water temp from console
+
+    :return: water_level, water_temp
+    """
     water_level: float = read_float('Enter water level: ', min_val=0, max_val=1)
     water_temp: float = read_float(
         'Enter water temp: ', min_val=0, max_val=100, default=20)

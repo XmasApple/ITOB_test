@@ -18,6 +18,12 @@ LOGS_DB_PATH: str = os.getenv('LOGS_DB_PATH')
 
 
 class Teapot:
+    """
+    Teapot class
+
+    :param time_to_boil: time to boil water in teapot
+    :param max_water_level: max water level in teapot
+    """
     def __init__(self, time_to_boil: float = TIME_TO_BOIL, max_water_level: float = MAX_WATER_LEVEL):
         self.time_to_boil: float = time_to_boil
         self.max_water_level: float = max_water_level
@@ -36,6 +42,13 @@ class Teapot:
         logging.info('Teapot created')
 
     def set_water_level(self, water_level: float, water_temp: float) -> (bool, str):
+        """
+        Sets water level in teapot
+
+        :param water_level: level of water in teapot
+        :param water_temp: temperature of water in teapot
+        :return: True if water level set, False otherwise and error message
+        """
         if self.is_boiling:
             msg = 'Teapot is on'
             logging.error(msg)
@@ -60,6 +73,11 @@ class Teapot:
         return True, msg
 
     def start_boiling(self) -> (bool, str):
+        """
+        Starts boiling water in teapot
+
+        :return: True if boiling started, False otherwise and error message
+        """
         if self.water_level <= 0:
             msg = 'No water'
             logging.error(msg)
@@ -72,12 +90,24 @@ class Teapot:
         return True, msg
 
     def stop_boiling(self) -> (bool, str):
+        """
+        Stops boiling water in teapot
+
+        :return: True if boiling stopped, False otherwise and error message
+        """
+        if not self.is_boiling:
+            msg = 'Teapot is not boiling'
+            logging.error(msg)
+            return False, msg
         self.is_boiling = False
         msg = 'Boiling stopped'
         logging.info(msg)
         return True, msg
 
-    def _boil(self):
+    def _boil(self) -> None:
+        """
+        Boils water in teapot
+        """
         temp_increase = (MAX_TEMP - self.start_temp) / self.time_to_boil
         while self.is_boiling:
             self.temp += temp_increase

@@ -1,7 +1,6 @@
 import logging
 
 from flask import Flask, request, Response
-
 from teapot import Teapot
 
 app = Flask(__name__)
@@ -13,6 +12,11 @@ teapot: Teapot | None = None
 
 @app.route('/api/create')
 def create_teapot():
+    """
+    Creates teapot with default params
+
+    :return: 201 if teapot created, 400 if teapot already exists
+    """
     global teapot
     if teapot is not None:
         return Response(
@@ -24,6 +28,12 @@ def create_teapot():
 
 
 def is_float(s: str):
+    """
+    Checks if string is float
+
+    :param s: string
+    :return: True if string is float, False otherwise
+    """
     try:
         float(s)
         return True
@@ -33,6 +43,11 @@ def is_float(s: str):
 
 @app.route('/api/fill')
 def fill_teapot():
+    """
+    Fills teapot with water
+
+    :return: 200 if water level set, 400 otherwise
+    """
     global teapot
     if teapot is None:
         return Response(
@@ -57,6 +72,11 @@ def fill_teapot():
 
 @app.route('/api/start_boiling')
 def start_boiling():
+    """
+    Starts boiling water in teapot
+
+    :return: 200 if boiling started, 400 otherwise
+    """
     global teapot
     if teapot is None:
         return Response(
@@ -72,17 +92,27 @@ def start_boiling():
 
 @app.route('/api/stop_boiling')
 def stop_boiling():
+    """
+    Stops boiling water in teapot
+
+    :return: 200 if boiling stopped, 400 otherwise
+    """
     global teapot
     if teapot is None:
         return Response(
             'Teapot does not exist, create it first with /create', status=400)
 
-    _, msg = teapot.stop_boiling()
-    return msg
+    is_stopped, msg = teapot.stop_boiling()
+    return Response(msg, status=200 if is_stopped else 400)
 
 
 @app.route('/api/status')
 def status():
+    """
+    Returns teapot status
+
+    :return: 200 if teapot exists, 400 otherwise
+    """
     global teapot
     if teapot is None:
         return Response(
@@ -93,6 +123,11 @@ def status():
 
 @app.route('/reset')
 def reset():
+    """
+    Resets teapot
+
+    :return: 200
+    """
     global teapot
     teapot = None
     return Response('Teapot reset')

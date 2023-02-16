@@ -67,13 +67,22 @@ class SQLiteHandler(logging.Handler):
         conn.execute(initial_sql)
         conn.commit()
 
-    def format_time(self, record):
+    def format_time(self, record: logging.LogRecord) -> None:
         """
-        Create a time stamp
+        Create a time stamp for the log record.
+
+        :param record: the log record
+        :return: None
         """
         record.dbtime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(record.created))
 
-    def emit(self, record):
+    def emit(self, record: logging.LogRecord) -> None:
+        """
+        Emit a record.
+
+        :param record: the log record
+        :return: None
+        """
         self.format(record)
         self.format_time(record)
         if record.exc_info:  # for exceptions
@@ -87,20 +96,3 @@ class SQLiteHandler(logging.Handler):
         conn = sqlite3.connect(self.db)
         conn.execute(sql)
         conn.commit()  # not efficient, but hopefully thread-safe
-
-
-def main():
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-
-    # sqlite handler
-    sh = SQLiteHandler(db="logs.db")
-    sh.setLevel(logging.INFO)
-    logging.getLogger().addHandler(sh)
-
-    # test
-    logging.info("test")
-
-
-if __name__ == '__main__':
-    main()
